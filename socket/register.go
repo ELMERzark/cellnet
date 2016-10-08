@@ -12,6 +12,11 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgName string, userHandler f
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
 
+	if msgMeta == nil {
+		log.Errorf("message register failed, %s", msgName)
+		return nil
+	}
+
 	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 
 		if ev, ok := data.(*SessionEvent); ok {
@@ -23,7 +28,18 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgName string, userHandler f
 				return
 			}
 
-			log.Debugf("#recv(%s) sid: %d %s(%d)|%s", ev.Ses.FromPeer().Name(), ev.Ses.ID(), msgMeta.Name, len(ev.Packet.Data), rawMsg.(proto.Message).String())
+			if EnableMessageLog {
+				msgLog(&MessageLogInfo{
+					Dir:       "recv",
+					PeerName:  ev.Ses.FromPeer().Name(),
+					SessionID: ev.Ses.ID(),
+					Name:      msgMeta.Name,
+					ID:        msgMeta.ID,
+					Size:      int32(len(ev.Packet.Data)),
+					Data:      rawMsg.(proto.Message).String(),
+				})
+
+			}
 
 			userHandler(rawMsg, ev.Ses)
 
@@ -38,6 +54,11 @@ func RegisterSessionMessage(eq cellnet.EventQueue, msgName string, userHandler f
 func RegisterPeerMessage(eq cellnet.EventQueue, msgName string, userHandler func(interface{}, cellnet.Peer)) *cellnet.MessageMeta {
 
 	msgMeta := cellnet.MessageMetaByName(msgName)
+
+	if msgMeta == nil {
+		log.Errorf("message register failed, %s", msgName)
+		return nil
+	}
 
 	eq.RegisterCallback(msgMeta.ID, func(data interface{}) {
 

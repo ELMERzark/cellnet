@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/proto/coredef"
+	"github.com/davyxu/cellnet/proto/gamedef"
 	"github.com/davyxu/cellnet/rpc"
 	"github.com/davyxu/cellnet/socket"
 	"github.com/davyxu/cellnet/test"
@@ -19,15 +19,17 @@ func server() {
 
 	pipe := cellnet.NewEventPipe()
 
-	p := socket.NewAcceptor(pipe).Start("127.0.0.1:7201")
+	p := socket.NewAcceptor(pipe)
+	p.SetName("server")
+	p.Start("127.0.0.1:7201")
 	rpc.InstallServer(p)
 
-	rpc.RegisterMessage(p, "coredef.TestEchoACK", func(resp rpc.Response, content interface{}) {
-		msg := content.(*coredef.TestEchoACK)
+	rpc.RegisterMessage(p, "gamedef.TestEchoACK", func(resp rpc.Response, content interface{}) {
+		msg := content.(*gamedef.TestEchoACK)
 
 		log.Debugln("server recv:", msg.String())
 
-		resp.Feedback(&coredef.TestEchoACK{
+		resp.Feedback(&gamedef.TestEchoACK{
 			Content: msg.String(),
 		})
 
@@ -41,15 +43,17 @@ func client() {
 
 	pipe := cellnet.NewEventPipe()
 
-	p := socket.NewConnector(pipe).Start("127.0.0.1:7201")
+	p := socket.NewConnector(pipe)
+	p.SetName("client")
+	p.Start("127.0.0.1:7201")
 
 	rpc.InstallClient(p)
 
-	socket.RegisterSessionMessage(p, "coredef.SessionConnected", func(content interface{}, ses cellnet.Session) {
+	socket.RegisterSessionMessage(p, "gamedef.SessionConnected", func(content interface{}, ses cellnet.Session) {
 
-		rpc.Call(p, &coredef.TestEchoACK{
+		rpc.Call(p, &gamedef.TestEchoACK{
 			Content: "rpc hello",
-		}, func(msg *coredef.TestEchoACK) {
+		}, func(msg *gamedef.TestEchoACK) {
 
 			log.Debugln("client recv", msg.Content)
 

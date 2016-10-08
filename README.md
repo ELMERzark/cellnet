@@ -3,39 +3,50 @@
 
 
 # 特性
+
 ## 异步单线程多进程架构
   
 * 无需处理繁琐的多线程安全问题
+
 * 底层IO仍然使用goroutine进行处理, 保证IO吞吐率
-* 性能敏感的业务拆离为单独进程进行处理
+
+* 发送时自动合并封包(性能效果决定于实际请求和发送比例)
 
 ## 数据协议
+
 * 封包类型采用Type-Length-Value的私有tcp封包, 自带序列号防御简单的封包复制
+
 * 消息统一使用Protobuf格式进行通信
 
-## 网关
-* 基本的网关透传框架
-* 广播,列表广播
-
+* 自动生成消息ID
 
 ## RPC
+
 * 异步远程过程调用
-
-## 异步MongoDB
-* 提供KV数据库的基本抽象
-
-## 模块化
-* 鼓励使用统一的模块化命名及拆分方法进行隔离降偶
 
 ## 日志
 * 分级日志
+
 * 可以方便的通过日志查看收发消息(Protobuf)的每一个字段消息
 
 # 第三方库依赖
 
 * github.com/golang/protobuf/proto
+
 * github.com/davyxu/golog
+
 * gopkg.in/mgo.v2
+
+# 性能测试
+
+go test -v github.com/davyxu/cellnet/benchmark/io
+
+CPU: i7 6700 3.4GHz 8核
+
+localhost 1000连接 同时对服务器进行实时PingPong测试
+
+##　Windows 7 x64, VMWare + CentOS 6.5 x64
+平均 QPS: 13.7w
 
 
 # 例子
@@ -92,21 +103,26 @@ func client() {
 
 # TODO
 
+
 ## MongoDB
-* DB内存映射框架
+
 * DB存储日志
 
-
-## 网关
-* 可定制的消息路由规则
 
 # Wiki
 https://github.com/davyxu/cellnet/wiki
 这里有文档和架构,设计解析
 
+
+# 贡献者
+
+viwii(viwii@sina.cn)
+
+IronsDu(duzhongwei@qq.com)
+
 # 备注
 
-感觉不错请fork和star, 谢谢!
+感觉不错请star, 谢谢!
 
 博客: http://www.cppblog.com/sunicdavy
 
